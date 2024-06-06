@@ -7,10 +7,17 @@ import axiosInstance from "../../utils/axios";
 import { API } from "../../utils/apiEndpoint";
 import { useParams } from "react-router-dom";
 import Slider from "react-slick";
-import { formatDateToMonthNameDayYear, toHoursAndMinutes } from "../../utils/hooks";
+import {
+  formatDateToMonthNameDayYear,
+  toHoursAndMinutes,
+} from "../../utils/hooks";
 import { useLoader } from "../../contextApp/LoaderContext";
+import { Button } from "primereact/button";
+import { useDispatch } from "react-redux";
+import { addCartWatchList } from "../../store/slices/AddWatchListSlice";
 const Movie = () => {
   const { id, mediatype } = useParams();
+  const dispatch = useDispatch();
   const settings = {
     dots: true,
     infinite: true,
@@ -20,18 +27,19 @@ const Movie = () => {
     dots: false,
   };
   const [singleMovie, setSingleMovie] = useState("");
-  
+
   const { loader, setLoader } = useLoader();
   const trendingMovie = async () => {
-    setLoader(true)
-    await axiosInstance.get(`${mediatype}/${id}`)
-    .then((res) => {
-      setLoader(false)
-      setSingleMovie(res.data);
-    })
-    .catch((err)=>{
-      setLoader(false)
-    })
+    setLoader(true);
+    await axiosInstance
+      .get(`${mediatype}/${id}`)
+      .then((res) => {
+        setLoader(false);
+        setSingleMovie(res.data);
+      })
+      .catch((err) => {
+        setLoader(false);
+      });
   };
   useEffect(() => {
     trendingMovie();
@@ -49,9 +57,14 @@ const Movie = () => {
     castApi();
   }, []);
 
+  // add favrote watch list
+
+  const handleAddWatchList = (params) => {
+    // console.log(params);
+    dispatch(addCartWatchList(params));
+  };
   return (
     <>
-  
       <div className="moviewrap">
         <div className="container-fluid">
           <div className="row">
@@ -99,7 +112,12 @@ const Movie = () => {
                 </div>
                 <div className="status">
                   <p>
-                    Release Date: <span>{formatDateToMonthNameDayYear(singleMovie?.release_date || singleMovie?.first_air_date)}</span>
+                    Release Date:{" "}
+                    <span>
+                      {formatDateToMonthNameDayYear(
+                        singleMovie?.release_date || singleMovie?.first_air_date
+                      )}
+                    </span>
                   </p>
                 </div>
                 <div className="status">
@@ -123,6 +141,10 @@ const Movie = () => {
                     <img src={playBtn} />
                     Watch trailer
                   </a>
+                  <Button
+                    label="Add Watch List"
+                    onClick={() => handleAddWatchList(singleMovie)}
+                  />
                 </div>
               </div>
             </div>
@@ -149,7 +171,7 @@ const Movie = () => {
                   <div className="cast">
                     <h1>Cast</h1>
                     <Slider {...settings}>
-                  {cast?.map((item) => {
+                      {cast?.map((item) => {
                         return (
                           <>
                             {/* <img  src={item?.profile_path? "https://image.tmdb.org/t/p/w500${item?.profile_path":"https://png.pngtree.com/png-vector/20190820/ourmid/pngtree-no-image-vector-illustration-isolated-png-image_1694547.jpg"} /> */}
@@ -164,7 +186,7 @@ const Movie = () => {
                             <p>{item?.character}</p>
                           </>
                         );
-                      })} 
+                      })}
                     </Slider>
                   </div>
                 </div>
@@ -213,8 +235,8 @@ const Movie = () => {
                         }
                       />
                       <div className="firtnth">
-                      <h4>{item?.name}</h4>
-                      <p>{item?.air_date}</p>
+                        <h4>{item?.name}</h4>
+                        <p>{item?.air_date}</p>
                       </div>
                     </div>
                   </>
@@ -226,7 +248,6 @@ const Movie = () => {
           </div>
         </div>
       )}
-  
     </>
   );
 };
